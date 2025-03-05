@@ -40,7 +40,7 @@ with col1:
     AST = st.number_input("AST:", min_value=0, max_value=1000, value=20)
     ACR = st.number_input("ACR:", min_value=0, max_value=10000, value=160)
     PLT = st.number_input("PLT:", min_value=0, max_value=10000, value=157)
-    Vfa = st.number_input("VFA:", min_value=0, max_value=10000, value=90)
+    VFA = st.number_input("VFA:", min_value=0, max_value=10000, value=90)
 
     # Process inputs and make predictions
     feature_values = [Age, HbAlc, PBG, METS_IR, BUN, SCR, AST, ACR, PLT, VFA]
