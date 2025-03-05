@@ -5,13 +5,6 @@ import pandas as pd
 import shap
 import matplotlib.pyplot as plt
 from lime.lime_tabular import LimeTabularExplainer
-import streamlit as st
-import joblib
-import numpy as np
-import pandas as pd
-import shap
-import matplotlib.pyplot as plt
-from lime.lime_tabular import LimeTabularExplainer
 
 # Load the new model
 model = joblib.load('stacking_classifier_model.pkl')
@@ -25,8 +18,8 @@ feature_names = ["Age", "HbAlc", "PBG", "METS_IR", "BUN", "SCR", "AST", "ACR", "
 # Streamlit user interface
 st.title("CMM Predictor")
 
-# Create two columns for layout
-col1, col2 = st.columns([1, 2])
+# Create two columns
+col1, col2 = st.columns(2)
 
 # Input fields in the left column
 with col1:
@@ -42,7 +35,9 @@ with col1:
     PLT = st.number_input("PLT:", min_value=0, max_value=10000, value=157)
     VFA = st.number_input("VFA:", min_value=0, max_value=10000, value=90)
 
-    # Process inputs and make predictions
+# Process inputs and make predictions in the right column
+with col2:
+    st.subheader("Prediction Results")
     feature_values = [Age, HbAlc, PBG, METS_IR, BUN, SCR, AST, ACR, PLT, VFA]
     features = np.array([feature_values])
 
@@ -73,36 +68,29 @@ with col1:
 
         st.write(advice)
 
-# Display SHAP and LIME explanations in the right column
-with col2:
-    if 'predicted_class' in locals():
-        st.subheader("Model Explanations")
-
         # SHAP Explanation
-        st.markdown("**SHAP Force Plot Explanation**")
+        st.subheader("SHAP Force Plot Explanation")
         explainer_shap = shap.KernelExplainer(model.predict_proba, X_test)
         shap_values = explainer_shap.shap_values(pd.DataFrame([feature_values], columns=feature_names))
-
+        
         # Display the SHAP force plot for the predicted class
         if predicted_class == 1:
-            shap.force_plot(explainer_shap.expected_value[1], shap_values[:, :, 1],
-                            pd.DataFrame([feature_values], columns=feature_names), matplotlib=True)
+            shap.force_plot(explainer_shap.expected_value[1], shap_values[:,:,1], pd.DataFrame([feature_values], columns=feature_names), matplotlib=True)
         else:
-            shap.force_plot(explainer_shap.expected_value[0], shap_values[:, :, 0],
-                            pd.DataFrame([feature_values], columns=feature_names), matplotlib=True)
+            shap.force_plot(explainer_shap.expected_value[0], shap_values[:,:,0], pd.DataFrame([feature_values], columns=feature_names), matplotlib=True)
 
         plt.savefig("shap_force_plot.png", bbox_inches='tight', dpi=1200)
         st.image("shap_force_plot.png", caption='SHAP Force Plot Explanation')
 
         # LIME Explanation
-        st.markdown("**LIME Explanation**")
+        st.subheader("LIME Explanation")
         lime_explainer = LimeTabularExplainer(
             training_data=X_test.values,
             feature_names=X_test.columns.tolist(),
             class_names=['Not sick', 'sick'],  # Adjust class names to match your classification task
             mode='classification'
         )
-
+        
         # Explain the instance
         lime_exp = lime_explainer.explain_instance(
             data_row=features.flatten(),
